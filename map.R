@@ -71,6 +71,7 @@ leaflet(mergescot) |>
   )
 
 # US parks
+# source: https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-10-08/readme.md
 most_visited_nps_species_data <- 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-10-08/most_visited_nps_species_data.csv' |> 
   fread()
 
