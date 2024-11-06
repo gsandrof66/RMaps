@@ -14,67 +14,52 @@ file_location <- "https://martinjc.github.io/UK-GeoJSON/json/sco/topo_lad.json"
 gedf <- st_read(file_location)
 dbase <- "./2022.xlsx" |> 
   read_excel(sheet = "Table 2", skip = 3) |>
-  janitor::clean_names() |> 
+  clean_names() |> 
   as.data.table() |> 
   filter(area_name != "Scotland") |> 
   dplyr::select(-area_type)
-glimpse(dbase)
-
-df <- data.table("LAD13NM" = c("Glasgow City", "City of Edinburgh", "Fife", "North Lanarkshire", "South Lanarkshire", "Aberdeenshire", "Highland", "Aberdeen City", "West Lothian", "Renfrewshire", "Falkirk", "Perth and Kinross", "Dumfries and Galloway", "Dundee City", "North Ayrshire", "East Ayrshire", "Angus", "Scottish Borders", "South Ayrshire", "East Lothian", "East Dunbartonshire", "East Renfrewshire", "Moray", "Midlothian", "Stirling", "West Dunbartonshire", "Argyll and Bute", "Inverclyde", "Clackmannanshire", "Na h-Eileanan Siar", "Shetland Islands", "Orkney Islands"),
-                 "population" = c(635130, 526470, 374730, 341400, 322630, 262690, 238060, 227430, 185580, 179940, 160700, 153810, 148790, 148060, 135280, 121840, 116260, 115270, 112610, 106370, 106370, 95170, 95510, 92150, 94330, 89590, 86890, 78150, 51400, 26830, 23080, 22500))
-
-setdiff(sort(unique(df$LAD13NM)),
-        sort(unique(gedf$LAD13NM)))
-
-setdiff(sort(unique(gedf$LAD13NM)),
-        sort(unique(df$LAD13NM)))
-
-df |> filter(LAD13NM == "Na h-Eileanan Siar")
-
-df <- df |> mutate(LAD13NM = ifelse(LAD13NM == "Na h-Eileanan Siar", 
-                                    "Eilean Siar", LAD13NM))
 
 # join data sets
-mergescot <- inner_join(gedf, df, by=c("LAD13NM")) |> 
-  dplyr::select(LAD13NM, population, geometry) |> 
-  arrange(desc(population))
+mergescot <- inner_join(gedf, dbase, by=c("id"="area_code")) |> 
+  dplyr::select(-id, -LAD13CD, -LAD13CDO, -LAD13NMW, -area_name)
+
+options <- setdiff(colnames(mergescot), c("LAD13NM", "area_name", "geometry"))
 
 ui <- fluidPage(
-  #use_darkmode(),
+  use_darkmode(),
   sidebarLayout(
     sidebarPanel(
       selectInput("ddAge", "Stratification:", 
-                  choices = c("All", "kids")),
+                  choices = options),
       numericInput("num", "Number of rows to show data for",
-                   5, 1, 20)
+                   3, 1, 10)
     ),
     mainPanel(
       leafletOutput("mymap"),
       DT::dataTableOutput("pts_table")
-      # tableOutput("ts_table")
     )
   )
 )
 
 # Define the server logic
 server <- function(input, output) {
-  # darkmode()
+  darkmode()
   filtered_data <- reactive({
-    # temp dataset
-    if(input$ddAge == "All"){
-      tdf <- df 
+    if(input$ddAge == "all_persons"){
+      tdf <- mergescot |>  dplyr::select(population = all_persons, LAD13NM, geometry) |> 
+        arrange(desc(population))
     }else{
-      tdf <- df 
+      tdf <- mergescot |>  dplyr::select(population = input$ddAge, LAD13NM, geometry) |> 
+        arrange(desc(population))
     }
+    
     return(tdf)
   })
-  # Create a plot of the "cars" dataset 
+  
   output$mymap <- renderLeaflet({
-    leaflet(mergescot) |> 
-      # addTiles() |> 
-      #addTiles(urlTemplate = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      #         attribution = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>') |> 
-      addProviderTiles(provider = providers$CartoDB.DarkMatter) |> 
+    leaflet(data = filtered_data()) |> 
+      # providers$CartoDB.DarkMatter
+      addProviderTiles(provider = providers$CartoDB.DarkMatterNoLabels) |> 
       addPolygons(
         fillColor = ~colorQuantile("YlOrRd", population)(population),
         weight = 2,
