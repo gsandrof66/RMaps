@@ -6,11 +6,20 @@ library(glue)
 library(data.table)
 library(dplyr)
 library(plotly)
+library(readxl)
 library(janitor)
 library(DT)
 
 file_location <- "https://martinjc.github.io/UK-GeoJSON/json/sco/topo_lad.json"
 gedf <- st_read(file_location)
+dbase <- "./2022.xlsx" |> 
+  read_excel(sheet = "Table 2", skip = 3) |>
+  janitor::clean_names() |> 
+  as.data.table() |> 
+  filter(area_name != "Scotland") |> 
+  dplyr::select(-area_type)
+glimpse(dbase)
+
 df <- data.table("LAD13NM" = c("Glasgow City", "City of Edinburgh", "Fife", "North Lanarkshire", "South Lanarkshire", "Aberdeenshire", "Highland", "Aberdeen City", "West Lothian", "Renfrewshire", "Falkirk", "Perth and Kinross", "Dumfries and Galloway", "Dundee City", "North Ayrshire", "East Ayrshire", "Angus", "Scottish Borders", "South Ayrshire", "East Lothian", "East Dunbartonshire", "East Renfrewshire", "Moray", "Midlothian", "Stirling", "West Dunbartonshire", "Argyll and Bute", "Inverclyde", "Clackmannanshire", "Na h-Eileanan Siar", "Shetland Islands", "Orkney Islands"),
                  "population" = c(635130, 526470, 374730, 341400, 322630, 262690, 238060, 227430, 185580, 179940, 160700, 153810, 148790, 148060, 135280, 121840, 116260, 115270, 112610, 106370, 106370, 95170, 95510, 92150, 94330, 89590, 86890, 78150, 51400, 26830, 23080, 22500))
 
