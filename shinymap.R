@@ -22,6 +22,9 @@ dbase <- "./2022.xlsx" |>
   mutate(area_name = ifelse(area_name=="Na h-Eileanan Siar", "Eilean Siar", area_name)) |> 
   dplyr::select(-area_type)
 
+mergescot <- gedf |> inner_join(dbase, by=c("LAD13NM" = "area_name")) |> 
+  dplyr::select(-area_code, -id, -LAD13CD, -LAD13CDO, -LAD13NMW)
+
 # join data sets
 options <- setdiff(colnames(mergescot), c("LAD13NM", "area_name", "geometry"))
 
