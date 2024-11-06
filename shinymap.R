@@ -11,18 +11,18 @@ library(janitor)
 library(DT)
 
 file_location <- "https://martinjc.github.io/UK-GeoJSON/json/sco/topo_lad.json"
-gedf <- st_read(file_location)
+gedf <- st_read(file_location) |> 
+  mutate()
+
 dbase <- "./2022.xlsx" |> 
   read_excel(sheet = "Table 2", skip = 3) |>
   clean_names() |> 
   as.data.table() |> 
   filter(area_name != "Scotland") |> 
+  mutate(area_name = ifelse(area_name=="Na h-Eileanan Siar", "Eilean Siar", area_name)) |> 
   dplyr::select(-area_type)
 
 # join data sets
-mergescot <- inner_join(gedf, dbase, by=c("id"="area_code")) |> 
-  dplyr::select(-id, -LAD13CD, -LAD13CDO, -LAD13NMW, -area_name)
-
 options <- setdiff(colnames(mergescot), c("LAD13NM", "area_name", "geometry"))
 
 ui <- fluidPage(
@@ -46,10 +46,10 @@ server <- function(input, output) {
   darkmode()
   filtered_data <- reactive({
     if(input$ddAge == "all_persons"){
-      tdf <- mergescot |>  dplyr::select(population = all_persons, LAD13NM, geometry) |> 
+      tdf <- mergescot |>  dplyr::select(LAD13NM, population = all_persons, geometry) |> 
         arrange(desc(population))
     }else{
-      tdf <- mergescot |>  dplyr::select(population = input$ddAge, LAD13NM, geometry) |> 
+      tdf <- mergescot |>  dplyr::select(LAD13NM, population = input$ddAge, geometry) |> 
         arrange(desc(population))
     }
     
