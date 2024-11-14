@@ -48,21 +48,15 @@ ui <- fluidPage(
 server <- function(input, output) {
   darkmode()
   filtered_data <- reactive({
-    if(input$ddAge == "all_persons"){
-      tdf <- mergescot |>  dplyr::select(LAD13NM, population = all_persons, geometry) |> 
-        arrange(desc(population))
-    }else{
-      tdf <- mergescot |>  dplyr::select(LAD13NM, population = input$ddAge, geometry) |> 
-        arrange(desc(population))
-    }
-    
+    tdf <- mergescot |>  dplyr::select(LAD13NM, population = input$ddAge, geometry) |> 
+      arrange(desc(population))
     return(tdf)
   })
   
   output$mymap <- renderLeaflet({
-    leaflet(data = filtered_data()) |> 
-      # providers$CartoDB.DarkMatter
+    leaflet(data = filtered_data()) |>
       addProviderTiles(provider = providers$CartoDB.DarkMatterNoLabels) |> 
+      
       addPolygons(
         fillColor = ~colorQuantile("YlOrRd", population)(population),
         weight = 2,
@@ -93,6 +87,36 @@ server <- function(input, output) {
       )
   })
   
+  # observe({
+  #   tdf <- mergescot |>  dplyr::select(LAD13NM, population = input$ddAge, geometry) |> 
+  #     arrange(desc(population))
+  #   
+  #   leafletProxy("mymap", session) %>%
+  #     clearShapes() |> 
+  #     addPolygons(
+  #       data = tdf,
+  #       fillColor = ~colorQuantile("YlOrRd", population)(population),
+  #       weight = 2,
+  #       opacity = 1,
+  #       color = "white",
+  #       dashArray = "3",
+  #       fillOpacity = 0.7,
+  #       highlightOptions = highlightOptions(
+  #         weight = 5,
+  #         color = "yellow",
+  #         dashArray = "",
+  #         fillOpacity = 0.7,
+  #         bringToFront = TRUE
+  #       ),
+  #       label = ~glue("{LAD13NM} {population}"),
+  #       labelOptions = labelOptions(
+  #         # style = list("font-weight" = "normal", padding = "3px 8px"),
+  #         textsize = "15px",
+  #         direction = "auto"
+  #       )
+  #     )
+  # })
+  # 
   output$pts_table <- DT::renderDataTable({
     filtered_data()
   }, options = list(pageLength = input$num))  # Set number of rows per page
