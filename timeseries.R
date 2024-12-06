@@ -40,4 +40,3 @@ my_plot <- plot_ly(ndf, x = ~dates, y = ~amount, type = 'scatter', mode = 'lines
          font = list(color = 'white'))  # Font color
 my_plot
 
-
