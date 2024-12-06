@@ -70,7 +70,7 @@ my_result <- function(data, type, year){
 
 final <- my_result(data, "financial", 2023)
 
-glimpse(final[["final"]])
+# glimpse(final[["final"]])
 
 leaflet(final[["final"]]) |> 
   addProviderTiles(provider = providers$CartoDB.DarkMatter) |> 

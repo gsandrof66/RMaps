@@ -9,9 +9,11 @@ shapefile <- st_read("./SG_NHS_HealthBoards_2019.shp") |> rename(HB = HBCode)
 shapefile <- st_transform(shapefile, crs = 4326)
 
 data <- fread("./beds_by_nhs_board_of_treatment_and_specialty.csv",
-              select = c("Quarter", "HB", "Location", "Specialty", "SpecialtyName", "TotalOccupiedBeddays", "PercentageOccupancy")) |> 
-  arrange(Quarter) |> 
+              select = c("Quarter", "HB", "Location", "Specialty", "TotalOccupiedBeddays", "PercentageOccupancy")) |> 
+  arrange(Quarter, HB, Location) |> 
   filter(!is.na(PercentageOccupancy))
+View(data)
+View(data |> filter(Quarter=="2019Q2") |> select(HB,Location, Specialty) |> arrange(HB,Location))
 
 my_result <- function(data, type, year){
   return(final)    
@@ -20,9 +22,10 @@ my_result <- function(data, type, year){
 hbcodes = c("S08000025", "S08000016", "S08000031")
             # , "S08000017")
 
-
+excluded <- c("2019Q2", "2019Q3", "2019Q4","2020Q1","2020Q2", "2020Q3", "2020Q4", "2021Q1")
 # How many hospital were full per HB
-datafull <- data |> filter(HB %in% hbcodes) |> 
+datafull <- data |> filter(HB %in% hbcodes,
+                           !Quarter %in% excluded) |> 
   mutate(isFull = PercentageOccupancy==100.0) |> 
   group_by(Quarter, HB, isFull) |> 
   summarise(num = n(), .groups = "drop")
