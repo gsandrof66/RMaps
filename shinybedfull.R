@@ -115,7 +115,8 @@ server <- function(input, output) {
   
   output$pts_table <- DT::renderDataTable({
     final <- res_final()
-    final[["final"]] |> select(Health_board = HBName, percentage_full_hosps=percFull)
+    st_set_geometry(final[["final"]], NULL) |> 
+      select(Health_board = HBName, percentage_full_hosps=percFull)
   }, options = list(pageLength = input$num))  # Set number of rows per page
   
 }
