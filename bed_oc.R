@@ -16,7 +16,8 @@ shapefile <- st_transform(shapefile, crs = 4326)
 data <- fread("./beds_by_nhs_board_of_treatment_and_specialty.csv",
               select = c("Quarter", "HB", "Location", "Specialty", "SpecialtyName", "TotalOccupiedBeddays", "PercentageOccupancy")) |> 
   arrange(Quarter) |> 
-  filter(!is.na(PercentageOccupancy)) |> 
+  filter(!is.na(PercentageOccupancy),
+         !HB %in% c("SB0801","S92000003")) |> 
   mutate(y = as.integer(unlist(tstrsplit(Quarter, "Q", fixed=TRUE, keep=1))),
          q = as.integer(unlist(tstrsplit(Quarter, "Q", fixed=TRUE, keep=2))))
 

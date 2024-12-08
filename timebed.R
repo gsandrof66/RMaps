@@ -12,8 +12,6 @@ data <- fread("./beds_by_nhs_board_of_treatment_and_specialty.csv",
               select = c("Quarter", "HB", "Location", "Specialty", "TotalOccupiedBeddays", "PercentageOccupancy")) |> 
   arrange(Quarter, HB, Location) |> 
   filter(!is.na(PercentageOccupancy))
-View(data)
-View(data |> filter(Quarter=="2019Q2") |> select(HB,Location, Specialty) |> arrange(HB,Location))
 
 my_result <- function(data, type, year){
   return(final)    
@@ -45,7 +43,7 @@ final <- st_set_geometry(shapefile, NULL) |>
   select(Quarter, HBName, percFull) |> 
   arrange(Quarter, HBName)
 
-glimpse(final)
+#glimpse(final)
 fig <- plot_ly(final, x = ~Quarter, y = ~percFull, color = ~HBName, 
                type = 'scatter', mode = 'lines+markers',
                text = ~paste(Quarter, '<br>', HBName, '<br>', percFull, '%'),
