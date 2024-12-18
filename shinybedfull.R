@@ -117,8 +117,15 @@ server <- function(input, output) {
     final <- res_final()
     st_set_geometry(final[["final"]], NULL) |> 
       select(Health_board = HBName, percentage_full_hosps=percFull)
-  }, options = list(pageLength = input$num))  # Set number of rows per page
-  
+  }, style = 'bootstrap', rownames = F, 
+  filter = "top",
+  options = list(pageLength = input$num, # Set number of rows per page
+                 dom = 'tip',
+                 autoWidth = T
+                 # columnDefs = list(list(targets = c(5), className = 'dt-right'))
+                 ),
+  colnames = c("Health boards", "Full capacity")
+  )
 }
 
 # Run the application
