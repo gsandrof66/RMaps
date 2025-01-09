@@ -33,7 +33,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       selectInput("ddAge", "Stratification:", 
-                  choices = options),
+                  choices = options, selectize = FALSE),
       numericInput("num", "Number of rows to show data for",
                    3, 1, 10)
     ),
