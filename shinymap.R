@@ -35,7 +35,27 @@ ui <- fluidPage(
       selectInput("ddAge", "Stratification:", 
                   choices = options, selectize = FALSE),
       numericInput("num", "Number of rows to show data for",
-                   3, 1, 10)
+                   3, 1, 10),
+      selectizeInput("board_specialty", "Select up to 4",
+                     choices = c("Scotland",
+                                 "NHS Ayrshire & Arran",
+                                 "NHS Borders",
+                                 "NHS Dumfries & Galloway",
+                                 "NHS Fife",
+                                 "NHS Forth Valley",
+                                 "NHS Grampian",
+                                 "NHS Greater Glasgow & Clyde",
+                                 "NHS Highland",
+                                 "NHS Lanarkshire",
+                                 "NHS Lothian",
+                                 "NHS Orkney",
+                                 "NHS Shetland",
+                                 "NHS Tayside",
+                                 "NHS Western Isles"),
+                     multiple = TRUE,
+                     selected = "Scotland",
+                     options = list(maxItems = 4)),
+      uiOutput("selected_items")
     ),
     mainPanel(
       leafletOutput("mymap"),
@@ -47,6 +67,15 @@ ui <- fluidPage(
 # Define the server logic
 server <- function(input, output) {
   darkmode()
+  output$selected_items <- renderUI({
+    if (is.null(input$board_specialty)) return(NULL)
+    tags$ul(
+      lapply(input$board_specialty, function(board) {
+        tags$div(HTML(paste("<label style='display:none;'>", board, "</label>")))
+      })
+    )
+  })
+  
   filtered_data <- reactive({
     tdf <- mergescot |>  dplyr::select(LAD13NM, population = input$ddAge, geometry) |> 
       arrange(desc(population))
