@@ -18,8 +18,7 @@ server <- function(input, output) {
     p <- htmlwidgets::onRender(p, "
       function(el, x) {
         el.setAttribute('aria-label', 'Scatter plot of Sepal Length vs Sepal Width');
-      }
-    ")
+      }")
     p
   })
 }
