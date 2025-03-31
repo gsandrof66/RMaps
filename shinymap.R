@@ -1,5 +1,4 @@
 library(shiny)
-library(shinyDarkmode)
 library(leaflet)
 library(sf)
 library(glue)
@@ -29,7 +28,6 @@ mergescot <- gedf |> inner_join(dbase, by=c("LAD13NM" = "area_name")) |>
 options <- setdiff(colnames(mergescot), c("LAD13NM", "area_name", "geometry"))
 
 ui <- fluidPage(
-  use_darkmode(),
   sidebarLayout(
     sidebarPanel(
       selectInput("ddAge", "Stratification:", 
@@ -46,7 +44,6 @@ ui <- fluidPage(
 
 # Define the server logic
 server <- function(input, output) {
-  darkmode()
   output$selected_items <- renderUI({
     if (is.null(input$board_specialty)) return(NULL)
     tags$ul(

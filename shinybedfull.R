@@ -1,5 +1,5 @@
 library(shiny)
-library(shinyDarkmode)
+library(bslib)
 library(leaflet)
 library(sf)
 library(glue)
@@ -68,10 +68,17 @@ my_result <- function(data, type, year){
   return(my_list)    
 }
 
+bootswatch_themes <- c("flatly", "vapor")
+
 ui <- fluidPage(
-  use_darkmode(),
+  theme = bs_theme(bootswatch = "vapor"),
+  title = "Demo map",
   sidebarLayout(
     sidebarPanel(
+      selectInput("theme", "Choose a theme:", 
+                  choices = bootswatch_themes,
+                  selectize = FALSE,
+                  selected = "vapor"),
       selectInput("ddtype", "Type of year:", 
                   choices = c("normal", "financial")),
       selectInput("ddyear", "Year", 
@@ -88,8 +95,13 @@ ui <- fluidPage(
 )
 
 # Define the server logic
-server <- function(input, output) {
-  darkmode()
+server <- function(input, output, session) {
+  observe({
+    session$setCurrentTheme(
+      bs_theme(bootswatch = input$theme)
+    )
+  })
+  
   res_final <- reactive({
     return(my_result(data, input$ddtype, as.integer(input$ddyear)))
   })
