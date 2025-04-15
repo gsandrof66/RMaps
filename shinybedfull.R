@@ -51,7 +51,7 @@ my_result <- function(data, type, year){
     left_join(dtemp, by=c("HB")) |> 
     filter(isFull) |> 
     mutate(percFull = (num*100)/total) |> 
-    mutate(across(c(percFull), round, 2))
+    mutate(across(c("percFull"), round, 2))
   
   final <- shapefile |> inner_join(final, by=c("HB")) |> 
     arrange(desc(percFull))
