@@ -9,27 +9,31 @@ library(plotly)
 library(readxl)
 library(janitor)
 library(DT)
+library(stringr)
 
-shapefile <- st_read("./SG_NHS_HealthBoards_2019.shp") |> rename(HB = HBCode)
-shapefile <- st_transform(shapefile, crs = 4326)
+shapefile <- st_read("./shpfiles/SG_NHS_HealthBoards_2019.shp")
+shapefile <- st_transform(shapefile, crs = 4326) |> rename(HB = HBCode)
 
 data <- fread("./beds_by_nhs_board_of_treatment_and_specialty.csv",
-              select = c("Quarter", "HB", "Location", "Specialty", "SpecialtyName", "TotalOccupiedBeddays", "PercentageOccupancy")) |> 
+               select = c("Quarter", "HB", "Location", "Specialty", "SpecialtyName", "TotalOccupiedBeddays", "PercentageOccupancy")) |> 
   arrange(Quarter) |> 
-  filter(!is.na(PercentageOccupancy)) |> 
-  mutate(y = as.integer(unlist(tstrsplit(Quarter, "Q", fixed=TRUE, keep=1))),
-         q = as.integer(unlist(tstrsplit(Quarter, "Q", fixed=TRUE, keep=2))))
+  _[!is.na(PercentageOccupancy)] |> 
+  mutate(y = as.integer(unlist(tstrsplit(Quarter, "Q", fixed=T, keep=1))),
+         q = as.integer(unlist(tstrsplit(Quarter, "Q", fixed=T, keep=2))))
+# mutate(y = as.integer(word(Quarter, 1, sep = "Q")),
+#      q = as.integer(word(Quarter, 2, sep = "Q")))
 
 my_result <- function(data, type, year){
   if(type=="normal"){
-    d3 <- data |> filter(y==year)
+    d3 <- data |> _[y==year]
   }else if(type=="financial"){
     quarters <- glue("Q{seq(4)}")
     quarters <- c(glue("{year}{quarters[2]}"),
                   glue("{year}{quarters[3]}"),
                   glue("{year+1}{quarters[4]}"),
                   glue("{year+1}{quarters[1]}"))
-    d3 <- data |> filter(Quarter %in% quarters)
+    
+    d3 <- data |> _[Quarter %in% quarters]
   }
   
   # How many hospital were full per HB
@@ -51,7 +55,7 @@ my_result <- function(data, type, year){
     left_join(dtemp, by=c("HB")) |> 
     filter(isFull) |> 
     mutate(percFull = (num*100)/total) |> 
-    mutate(across(c("percFull"), round, 2))
+    mutate(across("percFull", round, 2))
   
   final <- shapefile |> inner_join(final, by=c("HB")) |> 
     arrange(desc(percFull))
